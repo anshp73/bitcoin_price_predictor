@@ -1,0 +1,64 @@
+
+import requests
+import time
+# global variables
+api_key = '4fb54833-eaaf-4920-ba3a-6ddf99e35f20'
+bot_token1 = '1868999599:AAFLRlvZUsCpRBIB1ucSWt_QzHdUsoIZlYo'
+bot_token2 ='1863120881:AAG89eDvSCfUVfeMTBW_0cfI23cjbjNODFg'
+chat_id1 = '1543567877'
+chat_id2 = '1259871200'
+threshold = 40000
+time_interval = 1 * 15
+
+def get_btc_price():
+    url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
+    headers = {'Accepts': 'application/json',
+        'X-CMC_PRO_API_KEY': api_key }
+
+    # make a request to the coinmarketcap api
+    response = requests.get(url, headers=headers)
+    response_json = response.json()
+# extract the bitcoin price from the json data
+    btc_price = response_json['data'][0]
+    return btc_price['quote']['USD']['price']
+
+# fn to send_message through telegram
+def send_message1(chat_id1, msg):
+    url1 = f"https://api.telegram.org/bot{bot_token1}/sendMessage?chat_id={chat_id1}&text={msg}"
+# send the msg
+    requests.get(url1)
+def send_message2(chat_id2 , msg):
+    url2 = f"https://api.telegram.org/bot{bot_token2}/sendMessage?chat_id={chat_id2}&text={msg}"
+# send the msg
+    requests.get(url2)
+
+def send_message3(chat_id3 , msg):
+    url3 = f"https://api.telegram.org/bot{bot_token3}/sendMessage?chat_id={chat_id3}&text={msg}"
+# send the msg
+    requests.get(url3)
+
+# main fn
+def main():
+    price_list1 = []
+    price_list2 = []
+# infinite loop
+    while True:
+        price = get_btc_price()
+        price_list1.append(price)
+        price_list2.append(price)
+# if the price falls below threshold, send an immediate msg
+        if price < threshold:
+            send_message1(chat_id1=chat_id1, msg=f'BTC Price Drop Alert: {price}')
+            send_message2(chat_id2=chat_id2, msg=f'BTC Price Drop Alert: {price}')
+# send last 6 btc price
+        if len(price_list1) or len(price_list2) >= 6:
+            send_message1(chat_id1=chat_id1, msg=price_list1)
+            send_message2(chat_id2=chat_id2, msg=price_list2)
+            # empty the price_list
+            price_list1= []
+            price_list2= []
+# fetch the price for every dash minutes
+        time.sleep(time_interval)
+# fancy way to activate the main() function
+if __name__ == '__main__':
+    main()
